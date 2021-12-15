@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Data.Odbc;
 using System.Data;
+using System.Data.Odbc;
+using System.Windows.Forms;
 
 namespace _1213_データベースのデータ操作
 {
@@ -9,8 +9,6 @@ namespace _1213_データベースのデータ操作
     {
         //DataSet クラスの新しいインスタンスを初期化
         DataSet dtSet = new DataSet();
-
-        //OdbcCommand cmd;
 
         OdbcDataAdapter dataAdapter;
 
@@ -36,17 +34,10 @@ namespace _1213_データベースのデータ操作
                 dtSet.Tables.Remove(dtSet.Tables[0]);
             }
 
-
             try
             {
-                //conn.Open();
-
                 //クラスの新しいインスタンスを初期化
                 dataAdapter = new OdbcDataAdapter(@"Select * from " + textBox1.Text, conn);
-
-                //DataTable dt = new DataTable();
-                //dataAdapter.Fill(dt);
-                //dataGridView1.DataSource = dt;
 
                 OdbcCommandBuilder builder = new OdbcCommandBuilder(dataAdapter);
 
@@ -54,14 +45,26 @@ namespace _1213_データベースのデータ操作
                 dataAdapter.Fill(dtSet);
                 // データ表示
                 dataGridView1.DataSource = dtSet.Tables[0];
+
+
+                //---------------2021/12/27追加---------------
+                DataGridViewCheckBoxColumn column = new DataGridViewCheckBoxColumn();
+
+                column.HeaderText = "flag";
+                column.Name = "flag";
+
+                column.CellTemplate = new DataGridViewCheckBoxCell(false);
+                column.TrueValue = 1;
+                column.FalseValue = 0;
+
+                column.Width = 50;
+                column.IndeterminateValue = 1;
+                this.dataGridView1.Columns.AddRange(new DataGridViewColumn[] { column });
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                //conn.Close();
             }
         }
 
@@ -85,21 +88,6 @@ namespace _1213_データベースのデータ操作
             {
                 dataGridView1.Rows.RemoveAt(src[i].Index);
             }
-
-            //foreach (DataGridViewRow item in dataGridView1.SelectedRows)
-            //{
-            //    if (!item.IsNewRow)
-            //    {
-            //        cmd = new OdbcCommand("Delete from " + textBox1.Text +
-            //            " where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.CurrentRow.Cells[0].Value + "'", conn);
-
-            //        conn.Open();
-            //        cmd.ExecuteNonQuery();
-
-            //        conn.Close();
-            //    }
-            //}
         }
-
     }
 }
