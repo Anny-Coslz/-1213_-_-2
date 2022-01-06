@@ -85,7 +85,9 @@ namespace _1213_データベースのデータ操作
         }
 
         //データ削除
+        public void btn_Delete_Click_1(object sender, EventArgs e)
         {
+            //選択された行数
             DataGridViewSelectedRowCollection src = dataGridView1.SelectedRows;
 
             //行選択されない場合は、削除しない
