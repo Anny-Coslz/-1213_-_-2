@@ -8,6 +8,8 @@ namespace _1213_データベースのデータ操作
     //部分クラス
     public partial class Form1 : Form
     {
+        int int_i;
+
         //DataSet クラスの新しいインスタンスを初期化
         DataSet dtSet = new DataSet();
 
@@ -52,10 +54,6 @@ namespace _1213_データベースのデータ操作
 
 
 
-                
-
-
-
                 //---------------2021/12/27　チェックボックスを追加---------不要?------
                 //DataGridViewCheckBoxColumn column = new DataGridViewCheckBoxColumn();
 
@@ -87,7 +85,6 @@ namespace _1213_データベースのデータ操作
         }
 
         //データ削除
-        private void btn_Delete_Click_1(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection src = dataGridView1.SelectedRows;
 
@@ -96,9 +93,10 @@ namespace _1213_データベースのデータ操作
             for (int i = src.Count - 1; i >= 0; i--)
             {
                 dataGridView1.Rows.RemoveAt(src[i].Index);
+
+                //int_i = (int)dataGridView1.Rows[src[i].Index].Cells[0].Value;
             }
         }
-
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -110,33 +108,53 @@ namespace _1213_データベースのデータ操作
                 switch (row.RowState)
                 {
                     case DataRowState.Modified:
-                        //UpdateCommand文を編集、実行
-                        string sql1 = "Update " + textBox1.Text +" Set 社員番号 = 10011,名前= '佐藤11' Where ";
+
+                        // Update文を編集、実行
+                        // 列ループ、すべての値を再設定、値をシングルクオーテーションを付け、条件が1列目の値を一致すること！
+                        string sql1 = "UPDATE " + textBox1.Text + " SET ";
+
+                        for (int k = 0; k < dataGridView1.Columns.Count; k++)
+                        {
+                            sql1 = sql1 + dataGridView1.Columns[k].Name + " = '" + dataGridView1.Rows[i-1].Cells[k].Value + "',";
+                        }
+
+                        sql1 = sql1.Substring(0, sql1.Length - 1);
+
+                        sql1 = sql1 + " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
 
                         ExecuteNonQuery(sql1);
 
                         break;
                     
                     case DataRowState.Deleted:
-                        //DeleteCommand文を編集、実行
-                        string sql2 = "Delete from " + textBox1.Text + "";
+
+                        //Delete文を編集、実行　・・・・未完了
+                        string sql2 = "Delete from " + textBox1.Text +
+                            " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
 
                         ExecuteNonQuery(sql2);
 
                         break;
                     
                     case DataRowState.Added:
+
                         //InsertCommand文を編集、実行
-                        string sql3 = "Insert into " + textBox1.Text + "(社員番号,名前,性別,血液型) values (10008,'佐藤8','男','B') ";
+                        string sql3 = "INSERT INTO " + textBox1.Text + " VALUES (";
+
+                        for (int k = 0; k < dataGridView1.Columns.Count; k++)
+                        {
+                            sql3 = sql3 + "'" + dataGridView1.Rows[i-1].Cells[k].Value + "',";
+                        }
+
+                        sql3 = sql3.Substring(0, sql3.Length - 1) + ")";
 
                         ExecuteNonQuery(sql3);
-
                         break;
+                    
                     case DataRowState.Unchanged:
                         MessageBox.Show(i + "行目のrow.RowState：" + row.RowState);
                         break;
                 }
-
                 i++;
             }
         }
@@ -145,7 +163,7 @@ namespace _1213_データベースのデータ操作
         public void ExecuteNonQuery(string sql)
         {
             using (OdbcCommand command = new OdbcCommand())
-            {
+            {    
                 //トランザクション開始
                 conn.Open();
                 OdbcTransaction transaction = conn.BeginTransaction(IsolationLevel.ReadCommitted);
