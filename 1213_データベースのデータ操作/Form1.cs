@@ -8,7 +8,7 @@ namespace _1213_データベースのデータ操作
     //部分クラス
     public partial class Form1 : Form
     {
-        int int_i;
+        //int int_i;
 
         //DataSet クラスの新しいインスタンスを初期化
         DataSet dtSet = new DataSet();
@@ -53,8 +53,7 @@ namespace _1213_データベースのデータ操作
 
 
 
-
-                //---------------2021/12/27　チェックボックスを追加---------不要?------
+                //=============2021/12/27　チェックボックスを追加---------不要?=======
                 //DataGridViewCheckBoxColumn column = new DataGridViewCheckBoxColumn();
 
                 //column.HeaderText = "flag";
@@ -75,9 +74,9 @@ namespace _1213_データベースのデータ操作
             }
         }
 
-        //データベースに反映
         private void button1_Click(object sender, EventArgs e)
         {
+            //Updateメソッドヲ利用して、データベースへ反映
             dataAdapter.Update(dtSet);
 
             //出力メッセージ
@@ -85,26 +84,24 @@ namespace _1213_データベースのデータ操作
         }
 
         //データ削除
-        public void btn_Delete_Click_1(object sender, EventArgs e)
+        private void btn_Delete_Click_1(object sender, EventArgs e)
         {
             //選択された行数
             DataGridViewSelectedRowCollection src = dataGridView1.SelectedRows;
 
-            //行選択されない場合は、削除しない
-            //src.Count:選択された行数
+            //選択された行を一行ずつ削除、選択されない行を削除しない
+            //src.Count:選択された総行数
             for (int i = src.Count - 1; i >= 0; i--)
             {
                 dataGridView1.Rows.RemoveAt(src[i].Index);
-
-                //int_i = (int)dataGridView1.Rows[src[i].Index].Cells[0].Value;
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            int i = 1;
+            int i = 1; //行番号
 
-            //データテーブルをループ、行ステータスを判定
+            //一行ずつ、行ステータスを判定(Modified、Deleted、Added、UnChanged)
             foreach (DataRow row in dtSet.Tables[0].Rows)
             {
                 switch (row.RowState)
@@ -112,7 +109,7 @@ namespace _1213_データベースのデータ操作
                     case DataRowState.Modified:
 
                         // Update文を編集、実行
-                        // 列ループ、すべての値を再設定、値をシングルクオーテーションを付け、条件が1列目の値を一致すること！
+                        // 列ループ、すべての値を再設定、値をシングルクオーテーションを付け、更新条件が1列目の値と一致すること！
                         string sql1 = "UPDATE " + textBox1.Text + " SET ";
 
                         for (int k = 0; k < dataGridView1.Columns.Count; k++)
@@ -120,6 +117,7 @@ namespace _1213_データベースのデータ操作
                             sql1 = sql1 + dataGridView1.Columns[k].Name + " = '" + dataGridView1.Rows[i-1].Cells[k].Value + "',";
                         }
 
+                        //最後の「，」を削除 
                         sql1 = sql1.Substring(0, sql1.Length - 1);
 
                         sql1 = sql1 + " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
@@ -130,7 +128,7 @@ namespace _1213_データベースのデータ操作
                     
                     case DataRowState.Deleted:
 
-                        //Delete文を編集、実行　・・・・未完了
+                        //Delete文を編集、実行　・・・未完了,削除条件は？？
                         string sql2 = "Delete from " + textBox1.Text +
                             " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
 
@@ -140,7 +138,7 @@ namespace _1213_データベースのデータ操作
                     
                     case DataRowState.Added:
 
-                        //InsertCommand文を編集、実行
+                        //Insert文を編集、実行
                         string sql3 = "INSERT INTO " + textBox1.Text + " VALUES (";
 
                         for (int k = 0; k < dataGridView1.Columns.Count; k++)
@@ -163,6 +161,7 @@ namespace _1213_データベースのデータ操作
 
         //共通メソッド：SQLを実行
         public void ExecuteNonQuery(string sql)
+
         {
             using (OdbcCommand command = new OdbcCommand())
             {    
@@ -174,7 +173,7 @@ namespace _1213_データベースのデータ操作
                 {
                     command.CommandText = sql;
                     command.Connection = conn;
-
+                    
                     command.Transaction = transaction;
                     command.ExecuteNonQuery();
 
