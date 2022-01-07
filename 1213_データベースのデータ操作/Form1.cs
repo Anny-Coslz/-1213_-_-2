@@ -101,6 +101,15 @@ namespace _1213_データベースのデータ操作
         {
             int i = 1; //行番号
 
+            object hennsu; //Update、セルの値を設定
+            object hennsu2;//Delete、行削除前、一列目の値
+            object hennsu3;//Insert、セルの値を設定
+
+            //DataGridViewの最下行の空行を消す
+            //消さないと、最下行のすべての空白データでInsert文を編集して、実行する時、エラーが発生。
+            dataGridView1.AllowUserToAddRows = false;
+
+
             //一行ずつ、行ステータスを判定(Modified、Deleted、Added、UnChanged)
             foreach (DataRow row in dtSet.Tables[0].Rows)
             {
@@ -114,13 +123,24 @@ namespace _1213_データベースのデータ操作
 
                         for (int k = 0; k < dataGridView1.Columns.Count; k++)
                         {
-                            sql1 = sql1 + dataGridView1.Columns[k].Name + " = '" + dataGridView1.Rows[i-1].Cells[k].Value + "',";
+                            hennsu = dataGridView1.Rows[i - 1].Cells[k].Value;
+
+                            //セルの値が空白かを判断
+                            if (hennsu == "" || hennsu == DBNull.Value)
+                            {
+                                sql1 = sql1 + dataGridView1.Columns[k].Name + " = null,";
+                            }
+                            else
+                            {
+                                sql1 = sql1 + dataGridView1.Columns[k].Name + " = '" + dataGridView1.Rows[i - 1].Cells[k].Value + "',";
+                            }
                         }
 
-                        //最後の「，」を削除 
+                        //最後の「，」を切り出す 
                         sql1 = sql1.Substring(0, sql1.Length - 1);
-
-                        sql1 = sql1 + " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
+                        
+                        //Where条件を追加　※修正前の値と一致する
+                        sql1 = sql1 + " Where " + dataGridView1.Columns[0].Name + " = '" + row[dataGridView1.Columns[0].Name, DataRowVersion.Original] + "'";
 
                         ExecuteNonQuery(sql1);
 
@@ -128,9 +148,12 @@ namespace _1213_データベースのデータ操作
                     
                     case DataRowState.Deleted:
 
-                        //Delete文を編集、実行　・・・未完了,削除条件は？？
+                        //DataRowVersion.Original を付けて、削除前の状態の値を取得す
+                        hennsu2 = row[dataGridView1.Columns[0].Name, DataRowVersion.Original];
+
+                        //Delete文を編集、実行
                         string sql2 = "Delete from " + textBox1.Text +
-                            " Where " + dataGridView1.Columns[0].Name + " = '" + dataGridView1.Rows[i-1].Cells[0].Value + "'";
+                            " Where " + dataGridView1.Columns[0].Name + " = '" + hennsu2 + "'";
 
                         ExecuteNonQuery(sql2);
 
@@ -143,19 +166,33 @@ namespace _1213_データベースのデータ操作
 
                         for (int k = 0; k < dataGridView1.Columns.Count; k++)
                         {
-                            sql3 = sql3 + "'" + dataGridView1.Rows[i-1].Cells[k].Value + "',";
+                            hennsu3 = dataGridView1.Rows[i - 1].Cells[k].Value;
+
+                            //セルの値が空白かを判断
+                            if (hennsu3 == "" || hennsu3 == DBNull.Value)
+                            {
+                                sql3 = sql3 + " null,";
+                            }
+                            else
+                            {
+                                sql3 = sql3 + "'" + hennsu3 + "',";
+                            }
                         }
 
+                        //最後の「,」を切り出して、「)」を追加
                         sql3 = sql3.Substring(0, sql3.Length - 1) + ")";
 
                         ExecuteNonQuery(sql3);
                         break;
                     
                     case DataRowState.Unchanged:
-                        MessageBox.Show(i + "行目のrow.RowState：" + row.RowState);
+                        //MessageBox.Show(i + "行目のrow.RowState：" + row.RowState);
                         break;
                 }
                 i++;
+
+                //DataGridViewの最下行、追加できる
+                //dataGridView1.AllowUserToAddRows = true;
             }
         }
 
